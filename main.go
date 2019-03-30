@@ -18,12 +18,22 @@ func main() {
 		scanner.Scan()
 		p := scanner.Text()
 
-		hp := hashPassword(p)
+		hp, err := hashPassword(p)
+
+		if err != nil {
+			fmt.Println("Error hashing password: ", err)
+			return
+		}
 
 		hp = strings.ToUpper(hp)
 		hashSuffix := hp[5:]
 
-		matchingHashes := getHashs(hp)
+		matchingHashes, err := getHashs(hp)
+
+		if err != nil {
+			fmt.Println("Error getting matching hashes: ", err)
+			return
+		}
 
 		found := false
 
@@ -49,26 +59,31 @@ func main() {
 	}
 }
 
-func hashPassword(pass string) string {
+func hashPassword(pass string) (string, error) {
 	h := sha1.New()
-	h.Write([]byte(pass))
+	_, err := h.Write([]byte(pass))
+
+	if err != nil {
+		return "", err
+	}
+
 	bs := h.Sum(nil)
-	return hex.EncodeToString(bs)
+	return hex.EncodeToString(bs), nil
 }
 
-func getHashs(hp string) []string {
+func getHashs(hp string) ([]string, error) {
 	resp, err := http.Get("https://api.pwnedpasswords.com/range/" + hp[:5])
 
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
-	return strings.Split(string(body), "\n")
+	return strings.Split(string(body), "\n"), nil
 }
