@@ -51,7 +51,7 @@ func main() {
 		}
 
 		if !found {
-			fmt.Println("Password have not been")
+			fmt.Println("Password was not found at pwnedpasswords.com")
 		}
 
 		fmt.Println("")
